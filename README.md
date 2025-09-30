@@ -1,4 +1,4 @@
 # fair-play-kit
-Verifiable Gaming Primitives for Algorand
+The Ultimate Blockchain Gaming Toolkit
 
 Uploading the kit soon
