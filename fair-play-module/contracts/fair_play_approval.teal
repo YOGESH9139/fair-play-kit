@@ -1,0 +1,238 @@
+#pragma version 8
+txn ApplicationID
+int 0
+==
+bnz main_l21
+txna ApplicationArgs 0
+byte "create"
+==
+bnz main_l20
+txna ApplicationArgs 0
+byte "join"
+==
+bnz main_l19
+txna ApplicationArgs 0
+byte "commit"
+==
+bnz main_l15
+txna ApplicationArgs 0
+byte "reveal"
+==
+bnz main_l8
+txna ApplicationArgs 0
+byte "resolve"
+==
+bnz main_l7
+err
+main_l7:
+txn NumAppArgs
+int 2
+==
+assert
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 72
+int 4
+itob
+box_replace
+int 1
+return
+main_l8:
+txn NumAppArgs
+int 4
+==
+assert
+txna ApplicationArgs 2
+txna ApplicationArgs 3
+concat
+sha256
+txn Sender
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 0
+int 32
+box_extract
+==
+bnz main_l14
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 112
+int 32
+box_extract
+main_l10:
+==
+assert
+txn Sender
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 0
+int 32
+box_extract
+==
+bnz main_l13
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 152
+txna ApplicationArgs 2
+box_replace
+main_l12:
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 72
+int 3
+itob
+box_replace
+int 1
+return
+main_l13:
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 144
+txna ApplicationArgs 2
+box_replace
+b main_l12
+main_l14:
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 80
+int 32
+box_extract
+b main_l10
+main_l15:
+txn NumAppArgs
+int 3
+==
+assert
+txn Sender
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 0
+int 32
+box_extract
+==
+bnz main_l18
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 112
+txna ApplicationArgs 2
+box_replace
+main_l17:
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 72
+int 2
+itob
+box_replace
+int 1
+return
+main_l18:
+txna ApplicationArgs 1
+btoi
+callsub getmatchboxname_0
+int 80
+txna ApplicationArgs 2
+box_replace
+b main_l17
+main_l19:
+txna ApplicationArgs 1
+btoi
+store 0
+load 0
+callsub getmatchboxname_0
+store 1
+txn NumAppArgs
+int 2
+==
+assert
+load 1
+int 32
+int 32
+box_extract
+global ZeroAddress
+==
+assert
+txn Sender
+load 1
+int 0
+int 32
+box_extract
+!=
+assert
+load 1
+int 32
+txn Sender
+box_replace
+int 1
+return
+main_l20:
+txn NumAppArgs
+int 2
+==
+assert
+byte "match_counter"
+byte "match_counter"
+app_global_get
+int 1
++
+app_global_put
+byte "match_counter"
+app_global_get
+callsub getmatchboxname_0
+int 192
+box_create
+pop
+byte "match_counter"
+app_global_get
+callsub getmatchboxname_0
+txn Sender
+global ZeroAddress
+concat
+txna ApplicationArgs 1
+concat
+int 0
+itob
+concat
+int 32
+bzero
+concat
+int 32
+bzero
+concat
+int 0
+itob
+concat
+int 0
+itob
+concat
+int 32
+bzero
+concat
+box_put
+int 1
+return
+main_l21:
+byte "match_counter"
+int 0
+app_global_put
+int 1
+return
+
+// get_match_box_name
+getmatchboxname_0:
+proto 1 1
+byte "match_"
+frame_dig -1
+itob
+concat
+retsub

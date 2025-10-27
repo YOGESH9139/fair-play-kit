@@ -1,0 +1,8 @@
+{
+  "name": "fair-play-sdk",
+  "version": "1.0.0",
+  "main": "fairplay.js",
+  "dependencies": {
+    "algosdk": "^3.5.2"
+  }
+}

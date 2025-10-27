@@ -1,0 +1,228 @@
+import * as algosdk from "algosdk";
+
+function generateSalt() {
+  return window.crypto.getRandomValues(new Uint8Array(32)).toString();
+}
+
+class FairPlaySDK {
+    constructor(appId, algodToken, algodServer, algodPort) {
+        this.appId = appId;
+        this.algodClient = new algosdk.Algodv2("", algodServer, algodPort);}
+
+    // Helper: Generate move hash
+    generateMoveHash(move, salt) {
+        const data = Buffer.concat([
+            Buffer.from(move.toString()),
+            Buffer.from(salt)
+        ]);
+        return crypto.createHash('sha256').update(data).digest();
+    }
+
+    // Helper: Generate random salt
+    generateSalt() {
+        return crypto.randomBytes(32).toString('hex');
+    }
+
+    // Create Match
+    async createMatch(senderAddress, player1, player2, wagerAmount) {
+        const params = await this.algodClient.getTransactionParams().do();
+        const appArgs = [
+            new Uint8Array(Buffer.from('create')),
+            algosdk.decodeAddress(player1).publicKey,
+            algosdk.decodeAddress(player2).publicKey,
+            algosdk.encodeUint64(wagerAmount)
+        ]; [cite_start]// [cite: 6]
+        const txn = algosdk.makeApplicationNoOpTxn(
+            senderAddress,
+            params,
+            this.appId,
+            appArgs,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [algosdk.encodeUint64(400)] // Box reference
+        ); [cite_start]// [cite: 7, 8]
+
+        // Return the unsigned transaction
+        return [txn];
+    }
+
+    // Fund Match
+    async fundMatch(senderAddress, senderPrivateKey, matchId, wagerAmount) {
+        const params = await this.algodClient.getTransactionParams().do();
+        
+        const appCallTxn = algosdk.makeApplicationNoOpTxn(
+            senderAddress,
+            params,
+            this.appId,
+            [
+                new Uint8Array(Buffer.from('fund')),
+                algosdk.encodeUint64(matchId)
+            ]
+        );
+
+        const appAddress = algosdk.getApplicationAddress(this.appId);
+        const paymentTxn = algosdk.makePaymentTxnWithSuggestedParams(
+            senderAddress,
+            appAddress,
+            wagerAmount,
+            undefined,
+            undefined,
+            params
+        );
+
+        const txns = [appCallTxn, paymentTxn];
+        const groupID = algosdk.computeGroupID(txns);
+        txns.forEach(txn => txn.group = groupID);
+
+        const signedTxns = txns.map(txn => 
+            txn.signTxn(algosdk.mnemonicToSecretKey(senderPrivateKey).sk)
+        );
+
+        const txId = await this.algodClient.sendRawTransaction(signedTxns).do();
+        await algosdk.waitForConfirmation(this.algodClient, txId, 4);
+        
+        return txId;
+    }
+
+    // Commit Move
+    async commitMove(senderAddress, matchId, move, salt) {
+        const moveHash = this.generateMoveHash(move, salt);
+        const params = await this.algodClient.getTransactionParams().do();
+        const txn = algosdk.makeApplicationNoOpTxn(
+            senderAddress,
+            params,
+            this.appId,
+            [
+                new Uint8Array(Buffer.from('commit')),
+                algosdk.encodeUint64(matchId),
+                moveHash
+            ]
+        );
+        // Return an array of unsigned transactions
+        return [txn];
+    }
+
+    // Reveal Move
+    async revealMove(senderAddress, senderPrivateKey, matchId, move, salt) {
+        const params = await this.algodClient.getTransactionParams().do();
+        
+        const txn = algosdk.makeApplicationNoOpTxn(
+            senderAddress,
+            params,
+            this.appId,
+            [
+                new Uint8Array(Buffer.from('reveal')),
+                algosdk.encodeUint64(matchId),
+                new Uint8Array(Buffer.from(move.toString())),
+                new Uint8Array(Buffer.from(salt))
+            ]
+        );
+
+        const signedTxn = txn.signTxn(algosdk.mnemonicToSecretKey(senderPrivateKey).sk);
+        const txId = await this.algodClient.sendRawTransaction(signedTxn).do();
+        
+        await algosdk.waitForConfirmation(this.algodClient, txId, 4);
+        
+        return txId;
+    }
+
+    // Resolve Match
+    async resolveMatch(senderAddress, senderPrivateKey, matchId) {
+        const params = await this.algodClient.getTransactionParams().do();
+        
+        const txn = algosdk.makeApplicationNoOpTxn(
+            senderAddress,
+            params,
+            this.appId,
+            [
+                new Uint8Array(Buffer.from('resolve')),
+                algosdk.encodeUint64(matchId)
+            ]
+        );
+
+        const signedTxn = txn.signTxn(algosdk.mnemonicToSecretKey(senderPrivateKey).sk);
+        const txId = await this.algodClient.sendRawTransaction(signedTxn).do();
+        
+        await algosdk.waitForConfirmation(this.algodClient, txId, 4);
+        
+        return txId;
+    }
+
+    // Claim Reward
+    async claimReward(senderAddress, senderPrivateKey, matchId, winnerAddress, wagerAmount) {
+        const params = await this.algodClient.getTransactionParams().do();
+        
+        const appCallTxn = algosdk.makeApplicationNoOpTxn(
+            senderAddress,
+            params,
+            this.appId,
+            [
+                new Uint8Array(Buffer.from('claim')),
+                algosdk.encodeUint64(matchId)
+            ]
+        );
+
+        const appAddress = algosdk.getApplicationAddress(this.appId);
+        const paymentTxn = algosdk.makePaymentTxnWithSuggestedParams(
+            appAddress,
+            winnerAddress,
+            wagerAmount * 2,
+            undefined,
+            undefined,
+            params
+        );
+
+        const txns = [appCallTxn, paymentTxn];
+        const groupID = algosdk.computeGroupID(txns);
+        txns.forEach(txn => txn.group = groupID);
+
+        const signedAppCall = appCallTxn.signTxn(
+            algosdk.mnemonicToSecretKey(senderPrivateKey).sk
+        );
+        
+        // App must sign payment - use LogicSig here in production
+        const signedPayment = paymentTxn.signTxn(
+            algosdk.mnemonicToSecretKey(senderPrivateKey).sk
+        );
+
+        const txId = await this.algodClient.sendRawTransaction([
+            signedAppCall, 
+            signedPayment
+        ]).do();
+        
+        await algosdk.waitForConfirmation(this.algodClient, txId, 4);
+        
+        return txId;
+    }
+
+    // Get Match State
+    async getMatchState(matchId) {
+        // Read box data
+        const boxName = `match_${matchId}`;
+        const boxData = await this.algodClient.getApplicationBoxByName(
+            this.appId,
+            new Uint8Array(Buffer.from(boxName))
+        ).do();
+        
+        // Parse box data
+        const data = boxData.value;
+        
+        return {
+            player1: algosdk.encodeAddress(data.slice(0, 32)),
+            player2: algosdk.encodeAddress(data.slice(32, 64)),
+            wager: new DataView(data.buffer).getBigUint64(64),
+            state: new DataView(data.buffer).getBigUint64(72),
+            p1Commitment: data.slice(80, 112).toString('hex'),
+            p2Commitment: data.slice(112, 144).toString('hex'),
+            p1Move: new DataView(data.buffer).getBigUint64(144),
+            p2Move: new DataView(data.buffer).getBigUint64(152),
+            winner: algosdk.encodeAddress(data.slice(160, 192))
+        };
+    }
+}
+
+export default FairPlaySDK;
