@@ -10,15 +10,19 @@ import { useWallet } from "@txnlab/use-wallet-react";
 
 
 export default function DemoPage() {
-  const { wallets, activeAccount } = useWallet();
+  const { wallets } = useWallet();
+  const [walletAddress, setWalletAddress] = useState("");
+  const [walletConnected, setWalletConnected] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
-
-  // Use this instead of your manual state:
-  const walletConnected = !!activeAccount;
-  const walletAddress = activeAccount?.address || "";
 
   function openWalletModal() {
     setWalletModalOpen(true);
+  }
+
+  function handleWalletConnect(address: string) {
+    setWalletAddress(address);
+    setWalletConnected(true);
+    setWalletModalOpen(false); // Close modal
   }
 
   return (
