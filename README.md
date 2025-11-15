@@ -1,5 +1,5 @@
 # 🤖 Fair Play Kit: Provably Fair Gaming Primitives for Algorand
-The Fair Play Kit is a comprehensive, open-source toolkit designed to help developers quickly build transparent and trustless games on the Algorand blockchain. It provides the essential primitives for secure player matching, move submission, and verifiable game resolution.
+The *Fair Play Kit* Fair Play Kit eliminates trust requirements in online gaming by making all outcomes transparent and verifiable on-chain. Developers can integrate provably fair mechanics into any Algorand game using our TypeScript/Python SDKs.
 
 ## 🌟 Features & Why Use It
 - **Trustless by Design**: Eliminates the need for centralized trust. All game logic, state management, and resolution are handled by smart contracts.
@@ -19,11 +19,13 @@ The project is structured into three main components that communicate securely:
    - Handles transaction construction, including predicting the `nextMatchId` and generating dynamic Box References for every transaction.
    - Provides simple, chain-agnostic function calls (e.g., `createMatch`, `joinMatch`).
 
-3. **Frontend (`game-demo.tsx`)**: A React application demonstrating the full workflow.
+3. **Frontend (`game-demo.tsx`)**: This is just a React application demonstrating the full workflow.
    - Uses the `@txnlab/use-wallet-react` hook to handle secure transaction signing.
    - Implements polling logic to check the blockchain every few seconds for changes (e.g., detecting when an opponent has joined).
 
-## 🚀 Quick Start (Integrating the Kit)
+## 🚀 Quick Start (Integrating the Kit) 
+
+(This is for integrating kit only because a fully deployed vercel is ready for running the website)
 
 To integrate the Fair Play Kit into your own Algorand dApp, follow these steps:
 
@@ -52,23 +54,13 @@ python deploy.py
 
 ### 2. Get the Fair Play Kit SDK
 
-You have two options to get the SDK into your project:
-
-#### Option A: Clone from GitHub (For direct integration/development)
-
-If you want to integrate the SDK source directly into your project or contribute:
+#### Clone from GitHub (For direct integration/development)
 
 ```bash
 git clone https://github.com/YOGESH9139/fair-play-kit/fair-play-module
 # Then, you would copy the 'fair-play-module' folder into your project.
 ```
 
-#### Option B: Install from npm (For package-based integration)
-
-```bash
-cd sdk
-npm install fair-play-sdk
-```
 
 ### 3. Use the SDK in Your Application
 
@@ -123,6 +115,11 @@ async function createNewGame(senderAddress, betAmount) {
 // Call this function with a connected wallet's address and desired bet
 // createNewGame("YOUR_CONNECTED_WALLET_ADDRESS", 100000); // Example: 100000 microAlgos
 ```
+
+### *Flow:* User Action → React Component → SDK → Sign → Submit → Update UI
+
+### Deployed Links
+**Frontend Link**: https://fair-play-kit.vercel.app/
 
 ## 📋 Fair Play Kit Function Checklist
 
