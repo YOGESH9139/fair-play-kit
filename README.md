@@ -68,8 +68,8 @@ const txns = await sdk.createMatch(myAddress, betAmount, matchId);
 ### TestNet Deployment
 
 **Smart Contract:**
-- App ID: `740915050`
-- View on Lora: [https://lora.algokit.io/testnet/application/740915050](https://lora.algokit.io/testnet/application/740915050)
+- App ID: `748642793`
+- View on Lora: [https://lora.algokit.io/testnet/application/748642793](https://lora.algokit.io/testnet/application/740915050)
 
 **Verification:**
 You can verify all contract interactions, match states, and game outcomes on-chain using the Lora explorer.
