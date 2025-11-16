@@ -32,7 +32,7 @@ export function GameDemo() {
   const [matchIdInput, setMatchIdInput] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null); // For displaying errors
 
-  const APP_ID = 748599581; // Make sure this is your latest DEPLOYED App ID
+  const APP_ID = 749722221; // Make sure this is your latest DEPLOYED App ID
   const ALGOD_TOKEN = "a".repeat(64);
   const ALGOD_SERVER = "https://testnet-api.algonode.cloud";
   const ALGOD_PORT = "";
