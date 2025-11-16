@@ -69,8 +69,8 @@ const txns = await sdk.createMatch(myAddress, betAmount, matchId);
 
 **Smart Contract:**
 - App ID: `748642793`
-- Veiw on Pera Explorer: [https://testnet.explorer.perawallet.app/application/748642793/](https://testnet.explorer.perawallet.app/application/748642793/)
-- View on Lora: [https://lora.algokit.io/testnet/application/748642793](https://lora.algokit.io/testnet/application/748642793)
+- Veiw on Pera Explorer: [https://testnet.explorer.perawallet.app/application/749722221/](https://testnet.explorer.perawallet.app/application/749722221/)
+- View on Lora: [https://lora.algokit.io/testnet/application/749722221](https://lora.algokit.io/testnet/application/749722221)
 
 **Verification:**
 You can verify contract interactions, match states, and game outcomes on-chain using the Lora/Pera explorer.
